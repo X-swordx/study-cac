@@ -176,3 +176,27 @@ describe('--version in help message', () => {
     expect(output).toContain(`--version`)
   })
 })
+
+// 当在命令名中使用括号时，<>表示必需的命令参数，而[]表示可选参数。
+// 当在选项名称中使用括号时，<>表示可以是一个字符串/数字值，而[]表示该值也可以为true。
+describe('Brackets', () => {
+  test('angled brackets indicate required command arguments', async () => {
+    const cli = cac()
+    cli
+      .command('deploy <folder>', 'Deploy a folder to AWS')
+      .option('--scale [level]', 'Scaling level')
+      .action((folder) => {
+        console.log('folder', folder)
+      })
+    const { args, options } = cli.parse(
+      `node bin deploy cac.ts --scale`.split(' ')
+    )
+    expect(args).toEqual(['cac.ts'])
+    expect(options).toEqual({ '--': [], scale: true })
+    expect(() =>
+      cli.parse(`node bin deploy`.split(' '))
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"missing required args for command \`deploy <folder>\`"`
+    )
+  })
+})
